@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from "../firebaseConfig.js";
 import { Download } from 'lucide-react';
@@ -9,6 +9,7 @@ import * as XLSX from "xlsx";
 
 export function ComidaTable() {
     const [comida, setComida] = useState([]);
+    const tableRefComida = useRef(null);
 
     useEffect(() => {
         const comidaRef = collection(db, "Comida");
@@ -18,7 +19,7 @@ export function ComidaTable() {
                 ...doc.data(),
             }));
             // Ordenar por prioridad (de menor a mayor)
-            lista.sort((a, b) => a.prioridad - b.prioridad);
+            lista.sort((a, b) => b.congelado - a.congelado);
             setComida(lista);
         });
         return () => unsubscribe();
@@ -26,7 +27,7 @@ export function ComidaTable() {
 
     const exportToPDF = () => {
         const doc = new jsPDF();
-        const table = document.querySelector("table");
+        const table = tableRefComida.current;
 
         if (!table) return;
 
@@ -36,7 +37,7 @@ export function ComidaTable() {
     };
 
     const exportToExcel = () => {
-        const table = document.querySelector("table");
+        const table = tableRefComida.current;
         if (!table) return;
 
         const workbook = XLSX.utils.book_new();
@@ -49,7 +50,7 @@ export function ComidaTable() {
 
 
     const exportToPNG = async () => {
-        const table = document.querySelector("table");
+        const table = tableRefComida.current;
         if (!table) return;
 
         const canvas = await html2canvas(table);
@@ -93,7 +94,7 @@ export function ComidaTable() {
 
                 <div className="card shadow-sm">
                     <div className="table-responsive">
-                        <table className="table table-bordered table-hover mb-0">
+                        <table ref={tableRefComida} className="table table-bordered table-hover mb-0">
                             <thead className="table-light">
                                 <tr>
                                     <th>Nombre</th>

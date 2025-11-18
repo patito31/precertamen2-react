@@ -1,4 +1,4 @@
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState, useEffect, useRef } from 'react';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from "../firebaseConfig.js";
 import { Download } from 'lucide-react';
@@ -9,6 +9,7 @@ import * as XLSX from "xlsx";
 
 export function RegalosTable() {
     const [regalos, setRegalos] = useState([]);
+    const tableRefRegalos = useRef(null);
 
     useEffect(() => {
         const regalosRef = collection(db, "Regalos");
@@ -26,7 +27,7 @@ export function RegalosTable() {
 
     const exportToPDF = () => {
         const doc = new jsPDF();
-        const table = document.querySelector("table");
+        const table = tableRefRegalos.current;
 
         if (!table) return;
 
@@ -36,7 +37,7 @@ export function RegalosTable() {
     };
 
     const exportToExcel = () => {
-        const table = document.querySelector("table");
+        const table = tableRefRegalos.current;
         if (!table) return;
 
         const workbook = XLSX.utils.book_new();
@@ -49,7 +50,7 @@ export function RegalosTable() {
 
 
     const exportToPNG = async () => {
-        const table = document.querySelector("table");
+        const table = tableRefRegalos.current;
         if (!table) return;
 
         const canvas = await html2canvas(table);
@@ -93,7 +94,7 @@ export function RegalosTable() {
 
                 <div className="card shadow-sm">
                     <div className="table-responsive">
-                        <table className="table table-bordered table-hover mb-0">
+                        <table ref={tableRefRegalos} className="table table-bordered table-hover mb-0">
                             <thead className="table-light">
                                 <tr>
                                     <th>Nombre</th>
